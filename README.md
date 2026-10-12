@@ -1,9 +1,14 @@
 # Z-Error
 
-[![Zig Version](https://img.shields.io/badge/zig-0.16-orange.svg)](https://ziglang.org/)
+[![Zig Version](https://img.shields.io/badge/zig-0.17.0-orange.svg)](https://ziglang.org/)
+[![API Docs](https://img.shields.io/badge/API-Zig_Docs-blue.svg)](https://carlos-sweb.github.io/z-error/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-ECMAScript-compatible **Error** types (`Error`, `TypeError`, `RangeError`, `SyntaxError`, `ReferenceError`, `EvalError`, `URIError`, `AggregateError`) in Zig 0.16, part of the [z-*](https://github.com/carlos-sweb) micro-library ecosystem.
+ECMAScript-compatible **Error** types (`Error`, `TypeError`, `RangeError`, `SyntaxError`, `ReferenceError`, `EvalError`, `URIError`, `AggregateError`) in Zig 0.17.0, part of the [z-*](https://github.com/carlos-sweb) micro-library ecosystem.
+
+## Requirements
+
+Zig 0.17.0. The included `mise.toml` pins the development compiler to this version.
 
 ## Design
 
@@ -35,6 +40,24 @@ defer agg.deinit();
 ```bash
 zig build test
 ```
+
+## API Documentation
+
+Browse the [native Zig API documentation](https://carlos-sweb.github.io/z-error/) for `ErrorKind`, `ZError(T)`, and their public methods.
+
+Generate the documentation locally with Zig's native build API:
+
+```bash
+zig build docs
+```
+
+The generated site is written to `zig-out/docs/`. Serve it over HTTP to load the documentation's WebAssembly assets:
+
+```bash
+python3 -m http.server 8000 --directory zig-out/docs
+```
+
+Then open <http://localhost:8000/>. GitHub Actions generates and publishes this same documentation to GitHub Pages on every push to `master`. Generated files are build artifacts and are not committed to the repository.
 
 ## License
 

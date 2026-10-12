@@ -21,8 +21,8 @@ test "ZError(JSValue-like generic) works with a non-trivial T" {
 test "each ErrorKind constructs and stringifies independently" {
     const allocator = testing.allocator;
     const kinds = [_]ErrorKind{
-        .generic,          .type_error,      .range_error, .syntax_error,
-        .reference_error,  .eval_error,      .uri_error,
+        .generic,         .type_error, .range_error, .syntax_error,
+        .reference_error, .eval_error, .uri_error,
     };
     for (kinds) |kind| {
         var err = try ZError(i32).init(allocator, kind, "x");

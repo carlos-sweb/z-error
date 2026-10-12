@@ -1,3 +1,13 @@
+//! Error values with ECMAScript constructor names for Zig 0.17.0.
+//!
+//! Use `ErrorKind` for the predefined names and `ZError(T)` for an owned
+//! message with an optional list of aggregated values. Construct ordinary
+//! errors with `init` and aggregates with `initAggregate`.
+//!
+//! Each value owns its message and list buffer. Call `deinit` once when the
+//! owner is no longer needed; copying the value does not clone its buffers.
+//! Resources referenced by aggregated elements remain caller-managed.
+
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
@@ -79,6 +89,8 @@ pub fn ZError(comptime T: type) type {
 
         /// Error.prototype.toString(): "name: message", or just "name" if
         /// message is empty.
+        /// The caller owns the returned buffer and must free it with the
+        /// allocator passed to this method. Allocation failure is propagated.
         pub fn toString(self: *const Self, allocator: Allocator) ![]u8 {
             if (self.message.len == 0) {
                 return allocator.dupe(u8, self.kind.name());

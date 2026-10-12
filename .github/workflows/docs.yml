@@ -1,0 +1,72 @@
+name: Zig API documentation
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zig-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test and generate documentation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Install Zig 0.17.0
+        env:
+          ZIG_VERSION: 0.17.0
+          ZIG_SHA256: 1cbe9df9f27e6b78d14ccbca43b6703a404ef79ef1c463de901d7f088d4e2026
+        run: |
+          archive="zig-x86_64-linux-${ZIG_VERSION}.tar.xz"
+          curl --fail --location --retry 3 "https://ziglang.org/download/${ZIG_VERSION}/${archive}" --output "${RUNNER_TEMP}/${archive}"
+          printf '%s  %s\n' "${ZIG_SHA256}" "${RUNNER_TEMP}/${archive}" | sha256sum --check
+          tar -xf "${RUNNER_TEMP}/${archive}" -C "${RUNNER_TEMP}"
+          echo "${RUNNER_TEMP}/zig-x86_64-linux-${ZIG_VERSION}" >> "${GITHUB_PATH}"
+
+      - name: Check compiler and formatting
+        run: |
+          test "$(zig version)" = "0.17.0"
+          zig fmt --check build.zig src/zerror.zig tests/zerror_test.zig
+
+      - name: Run tests
+        run: zig build test --summary all
+
+      - name: Generate native Zig documentation
+        run: zig build docs --summary all
+
+      - name: Upload GitHub Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: zig-out/docs
+
+  deploy:
+    name: Publish API documentation
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
