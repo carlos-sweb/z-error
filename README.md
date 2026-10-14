@@ -10,6 +10,28 @@ ECMAScript-compatible **Error** types (`Error`, `TypeError`, `RangeError`, `Synt
 
 Zig 0.17.0. The included `mise.toml` pins the development compiler to this version.
 
+## Scope: JavaScript errors, not Zig errors
+
+z-error defines the canonical taxonomy of JavaScript-visible errors (the
+8 ECMA-262 kinds: Error, TypeError, RangeError, SyntaxError, ReferenceError,
+EvalError, URIError, AggregateError) and the `ZError(T)` struct that represents
+a JS Error.
+
+It is NOT a general-purpose Zig error-handling library.
+
+The rule in the z-* ecosystem:
+
+- z-error defines the taxonomy.
+- z-* data libraries (z-array, z-object, z-string, z-map, z-set, z-date,
+  z-promise, z-bigint, z-buffer, z-temporal, z-symbol, z-number, z-math,
+  z-json, z-parser, z-statements, z-functions) propagate Zig error sets for
+  internal failures. They do not import z-error and do not produce JS-visible
+  errors.
+- The interpreter and the host adapters (in z-run) decide when an internal
+  failure becomes a JS error, using `ZError(JSValue)` with an `ErrorKind`.
+- Not every thrown value is a `ZError`: `throw 123` and
+  `Promise.reject("x")` are valid JavaScript.
+
 ## Design
 
 - **`ErrorKind`** — an enum for the eight ECMA-262 native error kinds. `.name()` returns the constructor name used in `Error.prototype.toString()` output (`"TypeError"`, etc.).
